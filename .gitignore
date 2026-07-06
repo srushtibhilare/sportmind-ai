@@ -1,6 +1,6 @@
-.env
 __pycache__/
 *.pyc
 cricsheet_data/
-.vscode/
 .idea/
+config.bat
+node_modules
