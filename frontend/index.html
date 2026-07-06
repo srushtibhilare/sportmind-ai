@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SportMind AI — Cricket Memory Coach</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a1210;
+    --bg-glow: #0f1c17;
+    --surface: #121d19;
+    --surface-2: #17241f;
+    --line: #253630;
+    --text: #eef1ec;
+    --text-dim: #93a89d;
+    --text-faint: #5f7369;
+    --red: #c8102e;
+    --red-dim: #7a2532;
+    --gold: #d4af37;
+    --gold-dim: #8a763a;
+    --green: #4c9a6a;
+    --amber: #e0a72e;
+    --radius: 10px;
+    --shadow: 0 20px 50px rgba(0,0,0,0.45);
+  }
+
+  * { box-sizing: border-box; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+  }
+
+  body {
+    background:
+      radial-gradient(ellipse 900px 500px at 50% -10%, rgba(76,154,106,0.16), transparent 60%),
+      radial-gradient(ellipse 700px 400px at 85% 10%, rgba(212,175,55,0.06), transparent 60%),
+      var(--bg);
+    display: flex;
+    justify-content: center;
+    padding: 56px 20px 100px;
+  }
+
+  .page {
+    width: 100%;
+    max-width: 620px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.28em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin: 0 0 10px;
+  }
+
+  h1 {
+    font-family: 'Teko', sans-serif;
+    font-weight: 700;
+    font-size: 68px;
+    line-height: 0.95;
+    letter-spacing: 0.01em;
+    margin: 0;
+    color: var(--text);
+    text-shadow: 0 0 40px rgba(76,154,106,0.25);
+  }
+
+  h1 span { color: var(--red); }
+
+  .tagline {
+    font-size: 14.5px;
+    color: var(--text-dim);
+    margin: 10px 0 0;
+    letter-spacing: 0.01em;
+  }
+
+  .search-panel {
+    background: linear-gradient(180deg, var(--surface), var(--surface-2));
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px;
+    display: flex;
+    gap: 10px;
+    box-shadow: var(--shadow);
+  }
+
+  .search-panel input {
+    flex: 1;
+    background: #0c1512;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 14px 16px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+
+  .search-panel input::placeholder { color: var(--text-faint); }
+
+  .search-panel input:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(212,175,55,0.15);
+  }
+
+  .search-panel button {
+    background: var(--red);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 0 26px;
+    font-family: 'Teko', sans-serif;
+    font-weight: 600;
+    font-size: 20px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
+  }
+
+  .search-panel button:hover { background: #a80d26; }
+  .search-panel button:active { transform: scale(0.97); }
+  .search-panel button:focus-visible,
+  .search-panel input:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+
+  .hint {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    color: var(--text-faint);
+    margin: 10px 4px 0;
+  }
+
+  .section {
+    margin-top: 26px;
+    animation: rise 0.35s ease both;
+  }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin: 0 0 10px 2px;
+  }
+
+  .section-label svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+  .scoreboard {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .scoreboard-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .player-name {
+    font-family: 'Teko', sans-serif;
+    font-weight: 600;
+    font-size: 30px;
+    letter-spacing: 0.01em;
+  }
+
+  .matches-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .stat {
+    padding: 18px 20px;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .stat:nth-child(2n) { border-right: none; }
+
+  .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: 6px;
+  }
+
+  .stat-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 28px;
+    color: var(--text);
+  }
+
+  .meter-wrap {
+    padding: 22px 20px 20px;
+    display: flex;
+    align-items: center;
+    gap: 22px;
+  }
+
+  .meter-wrap svg { flex-shrink: 0; }
+
+  .meter-copy .stat-label { margin-bottom: 8px; }
+
+  .meter-insight {
+    font-size: 15px;
+    line-height: 1.45;
+    color: var(--text);
+    max-width: 320px;
+  }
+
+  .needle {
+    transform-origin: 100px 100px;
+    transition: transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .memory-card {
+    background: var(--surface);
+    border: 1px dashed var(--line);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    position: relative;
+  }
+
+  .memory-card::before,
+  .memory-card::after {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    background: var(--bg);
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .memory-card::before { left: -9px; }
+  .memory-card::after { right: -9px; }
+
+  .memory-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+
+  .memory-timestamp {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--gold);
+  }
+
+  .memory-stats {
+    display: flex;
+    gap: 18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+
+  .memory-insight {
+    font-size: 14px;
+    color: var(--text-dim);
+    font-style: italic;
+  }
+
+  .memory-empty {
+    font-size: 14px;
+    color: var(--text-faint);
+  }
+
+  .coach-card {
+    background: linear-gradient(180deg, #1a1611, #15120e);
+    border: 1px solid var(--gold-dim);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    box-shadow: 0 12px 30px rgba(212,175,55,0.06);
+  }
+
+  .coach-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .coach-head svg { width: 16px; height: 16px; color: var(--gold); }
+
+  .coach-title {
+    font-family: 'Teko', sans-serif;
+    font-weight: 600;
+    font-size: 20px;
+    letter-spacing: 0.03em;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+
+  .coach-text {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text);
+  }
+
+  .loading-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    padding: 20px;
+  }
+
+  .spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--line);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-box {
+    background: var(--surface);
+    border: 1px solid var(--red-dim);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    color: #f0b7bf;
+    font-size: 14.5px;
+  }
+
+  .error-box strong { color: #ff8a97; }
+
+  footer {
+    text-align: center;
+    margin-top: 44px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-faint);
+    letter-spacing: 0.08em;
+  }
+
+  @media (max-width: 480px) {
+    h1 { font-size: 52px; }
+    .stat-row { grid-template-columns: 1fr; }
+    .stat:nth-child(2n) { border-right: 1px solid var(--line); }
+    .meter-wrap { flex-direction: column; text-align: center; }
+    .meter-copy { display: flex; flex-direction: column; align-items: center; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <p class="eyebrow">Agentic Memory · IPL Ball-by-Ball Data</p>
+    <h1>SPORT<span>MIND</span> AI</h1>
+    <p class="tagline">Your AI coach remembers every player, every match, every trend.</p>
+  </header>
+
+  <div class="search-panel">
+    <input
+      type="text"
+      id="playerInput"
+      placeholder="e.g. V Kohli, CH Gayle, MS Dhoni"
+      autocomplete="off"
+      onkeydown="if(event.key==='Enter') analyzePlayer()"
+    />
+    <button onclick="analyzePlayer()">Analyze</button>
+  </div>
+  <p class="hint">TIP — use Cricsheet-style names: initials + surname</p>
+
+  <div id="output"></div>
+
+  <footer>COCKROACHDB · AWS BEDROCK · BUILT FOR THE HACKATHON FLOOR</footer>
+</div>
+
+<script>
+  const API_BASE = "http://127.0.0.1:8000";
+
+  const icons = {
+    memory: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.4c.5.5.8 1.1.8 1.8V16h6.4v-.8c0-.7.3-1.3.8-1.8A6 6 0 0 0 12 3z"/></svg>`,
+    coach: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 21h8M12 17v4M6 3h12l-1.5 8.5a4.5 4.5 0 0 1-9 0L6 3z"/><path d="M6 3H4a1 1 0 0 0-1 1.2l.7 3A2 2 0 0 0 5.6 9H6"/><path d="M18 3h2a1 1 0 0 1 1 1.2l-.7 3A2 2 0 0 1 18.4 9H18"/></svg>`,
+    stats: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>`
+  };
+
+  function insightColor(insight) {
+    const s = insight.toLowerCase();
+    if (s.includes("good")) return { color: "var(--green)", angle: 145 };
+    if (s.includes("average")) return { color: "var(--amber)", angle: 90 };
+    return { color: "var(--red)", angle: 35 };
+  }
+
+  function meterSVG(insight) {
+    const { color, angle } = insightColor(insight);
+    return `
+      <svg width="150" height="90" viewBox="0 0 200 110">
+        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="var(--line)" stroke-width="14" stroke-linecap="round"/>
+        <path d="M 20 100 A 80 80 0 0 1 66 27" fill="none" stroke="var(--red-dim)" stroke-width="14" stroke-linecap="round" opacity="0.9"/>
+        <path d="M 66 27 A 80 80 0 0 1 134 27" fill="none" stroke="var(--gold-dim)" stroke-width="14" stroke-linecap="round" opacity="0.9"/>
+        <path d="M 134 27 A 80 80 0 0 1 180 100" fill="none" stroke="#2c4a37" stroke-width="14" stroke-linecap="round" opacity="0.9"/>
+        <g class="needle" style="transform: rotate(${angle - 90}deg)">
+          <line x1="100" y1="100" x2="100" y2="34" stroke="${color}" stroke-width="4" stroke-linecap="round"/>
+          <circle cx="100" cy="100" r="7" fill="${color}"/>
+        </g>
+      </svg>
+    `;
+  }
+
+  async function analyzePlayer() {
+    const player = document.getElementById("playerInput").value.trim();
+    const output = document.getElementById("output");
+
+    if (!player) {
+      output.innerHTML = `<div class="section"><div class="error-box"><strong>Enter a name first.</strong> Try "V Kohli" or "CH Gayle".</div></div>`;
+      return;
+    }
+
+    output.innerHTML = `
+      <div class="section">
+        <div class="scoreboard">
+          <div class="loading-line"><div class="spinner"></div> Pulling match history for "${player}"…</div>
+        </div>
+      </div>`;
+
+    try {
+      const res = await fetch(`${API_BASE}/analyze?player=${encodeURIComponent(player)}`);
+      const data = await res.json();
+
+      if (data.error) {
+        output.innerHTML = `
+          <div class="section">
+            <div class="error-box"><strong>No record found.</strong> ${data.error} Check the spelling — Cricsheet uses initials, e.g. "V Kohli" not "Virat Kohli".</div>
+          </div>`;
+        return;
+      }
+
+      const { color } = insightColor(data.insight);
+
+      let html = `
+        <div class="section">
+          <p class="section-label">${icons.stats} Performance</p>
+          <div class="scoreboard">
+            <div class="scoreboard-head">
+              <span class="player-name">${data.player}</span>
+              <span class="matches-tag">${data.matches_analyzed} matches on record</span>
+            </div>
+            <div class="stat-row">
+              <div class="stat">
+                <div class="stat-label">Average Runs</div>
+                <div class="stat-value">${data.average_runs}</div>
+              </div>
+              <div class="stat">
+                <div class="stat-label">Strike Rate</div>
+                <div class="stat-value">${data.strike_rate}</div>
+              </div>
+            </div>
+            <div class="meter-wrap">
+              ${meterSVG(data.insight)}
+              <div class="meter-copy">
+                <div class="stat-label">Form Read</div>
+                <div class="meter-insight" style="color:${color}">${data.insight}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      html += `<div class="section"><p class="section-label">${icons.memory} Memory Recall</p>`;
+      if (data.previous_analysis) {
+        const prev = data.previous_analysis;
+        html += `
+          <div class="memory-card">
+            <div class="memory-row">
+              <span>Last seen in the system</span>
+              <span class="memory-timestamp">${new Date(prev.created_at).toLocaleString()}</span>
+            </div>
+            <div class="memory-stats">
+              <span>AVG ${prev.average_runs}</span>
+              <span>SR ${prev.strike_rate}</span>
+            </div>
+            <div class="memory-insight">"${prev.insight}"</div>
+          </div>`;
+      } else {
+        html += `
+          <div class="memory-card">
+            <div class="memory-empty">No prior record — this is the first time this player has been analyzed.</div>
+          </div>`;
+      }
+      html += `</div>`;
+
+      if (data.ai_advice) {
+        html += `
+          <div class="section">
+            <div class="coach-card">
+              <div class="coach-head">${icons.coach}<span class="coach-title">AI Coach Notes</span></div>
+              <div class="coach-text">${data.ai_advice}</div>
+            </div>
+          </div>`;
+      }
+
+      output.innerHTML = html;
+
+    } catch (err) {
+      output.innerHTML = `
+        <div class="section">
+          <div class="error-box"><strong>Can't reach the backend.</strong> Make sure uvicorn is running at ${API_BASE}.</div>
+        </div>`;
+    }
+  }
+</script>
+</body>
+</html>
